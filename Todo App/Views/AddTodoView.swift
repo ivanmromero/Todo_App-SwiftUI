@@ -9,12 +9,38 @@ import SwiftUI
 
 struct AddTodoView: View {
     // MARK: - PROPERTIES
+    @Environment(\.managedObjectContext) var viewContext
     @Environment(\.dismiss) private var dismiss
     
     @State private var name: String = ""
     @State private var priority: String = "Normal"
     
     let priorities: [String] = ["High", "Normal", "Low"]
+    
+    @State private var errorShowing: Bool = false
+    @State private var errorTitle: String = ""
+    @State private var errorMessage: String = ""
+    
+    // MARK: - FUNCTIONS
+    private func save() {
+        if !name.isEmpty {
+            let todo = Todo(context: viewContext)
+            todo.name = name
+            todo.priority = priority
+            
+            do {
+                try viewContext.save()
+            } catch {
+                print(error)
+            }
+            
+            dismiss()
+        } else {
+            errorShowing = true
+            errorTitle = "Invalid Name"
+            errorMessage = "Make sure to enter something for\nthe new todo item."
+        }
+    }
     
     // MARK: - BODY
     var body: some View {
@@ -34,7 +60,7 @@ struct AddTodoView: View {
                     
                     // MARK: - SAVE BUTTON
                     Button(action: {
-                        
+                        save()
                     }, label: {
                         Text("Save")
                     })
@@ -53,6 +79,12 @@ struct AddTodoView: View {
                     })
                 }
             })
+            .alert(errorTitle, isPresented: $errorShowing) {
+                Button("OK", action: {})
+            } message: {
+                Text(errorMessage)
+            }
+
         }
     }
 }

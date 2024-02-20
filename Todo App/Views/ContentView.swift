@@ -15,15 +15,26 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \Todo.name, ascending: true)],
         animation: .default)
-    private var items: FetchedResults<Item>
+    private var todos: FetchedResults<Todo>
 
     // MARK: - BODY
     var body: some View {
         NavigationStack {
-            List(0 ..< 5) { item in
-                Text("Hello")
+            List {
+                ForEach(todos, id: \.self) { todo in
+                    HStack(alignment: .center) {
+                        Text(todo.name ?? "Unknown")
+                        
+                        Spacer()
+                        
+                        Text(todo.priority ?? "Unknown")
+                    }
+                }
+                .onDelete(perform: { indexSet in
+                    deleteTodo(offsets: indexSet)
+                })
             }
             .navigationTitle("Todo")
             .navigationBarTitleDisplayMode(.inline)
@@ -35,40 +46,25 @@ struct ContentView: View {
                         Image(systemName: "plus")
                     })
                     .sheet(isPresented: $showingAddTodoView, content: {
-                        AddTodoView()
+                        AddTodoView().environment(\.managedObjectContext, viewContext)
                     })
+                }
+                
+                ToolbarItem(placement: .topBarLeading) {
+                    EditButton()
                 }
             })
         }
     }
 
-    private func addItem() {
+    private func deleteTodo(offsets: IndexSet) {
         withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+            offsets.map { todos[$0] }.forEach(viewContext.delete)
 
             do {
                 try viewContext.save()
             } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                print(error)
             }
         }
     }
@@ -81,6 +77,8 @@ private let itemFormatter: DateFormatter = {
     return formatter
 }()
 
+
+// MARK: - PROPERTIES
 #Preview {
     ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }
