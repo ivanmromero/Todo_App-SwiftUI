@@ -22,38 +22,46 @@ struct ContentView: View {
     // MARK: - BODY
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(todos, id: \.self) { todo in
-                    HStack(alignment: .center) {
-                        Text(todo.name ?? "Unknown")
-                        
-                        Spacer()
-                        
-                        Text(todo.priority ?? "Unknown")
+            ZStack {
+                List {
+                    ForEach(todos, id: \.self) { todo in
+                        HStack(alignment: .center) {
+                            Text(todo.name ?? "Unknown")
+                            
+                            Spacer()
+                            
+                            Text(todo.priority ?? "Unknown")
+                        }
                     }
+                    .onDelete(perform: { indexSet in
+                        deleteTodo(offsets: indexSet)
+                    })
                 }
-                .onDelete(perform: { indexSet in
-                    deleteTodo(offsets: indexSet)
+                .navigationTitle("Todo")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar(content: {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(action: {
+                            showingAddTodoView.toggle()
+                        }, label: {
+                            Image(systemName: "plus")
+                        })
+                        .sheet(isPresented: $showingAddTodoView, content: {
+                            AddTodoView().environment(\.managedObjectContext, viewContext)
+                        })
+                    }
+                    
+                    ToolbarItem(placement: .topBarLeading) {
+                        EditButton()
+                    }
                 })
-            }
-            .navigationTitle("Todo")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar(content: {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {
-                        showingAddTodoView.toggle()
-                    }, label: {
-                        Image(systemName: "plus")
-                    })
-                    .sheet(isPresented: $showingAddTodoView, content: {
-                        AddTodoView().environment(\.managedObjectContext, viewContext)
-                    })
-                }
                 
-                ToolbarItem(placement: .topBarLeading) {
-                    EditButton()
+                
+                // MARK: - NO TODO ITEMS
+                if todos.isEmpty {
+                    EmptyListView()
                 }
-            })
+            }
         }
     }
 
