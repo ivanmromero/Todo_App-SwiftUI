@@ -11,6 +11,7 @@ import CoreData
 struct ContentView: View {
     // MARK: - PROPERTIES
     @State private var showingAddTodoView: Bool = false
+    @State private var animatingButton: Bool = false
     
     @Environment(\.managedObjectContext) private var viewContext
 
@@ -46,9 +47,7 @@ struct ContentView: View {
                         }, label: {
                             Image(systemName: "plus")
                         })
-                        .sheet(isPresented: $showingAddTodoView, content: {
-                            AddTodoView().environment(\.managedObjectContext, viewContext)
-                        })
+                        
                     }
                     
                     ToolbarItem(placement: .topBarLeading) {
@@ -56,11 +55,50 @@ struct ContentView: View {
                     }
                 })
                 
-                
                 // MARK: - NO TODO ITEMS
                 if todos.isEmpty {
                     EmptyListView()
                 }
+            }
+            .sheet(isPresented: $showingAddTodoView, content: {
+                AddTodoView().environment(\.managedObjectContext, viewContext)
+            })
+            .overlay(alignment: .bottomTrailing) {
+                ZStack {
+                    Group {
+                        Circle()
+                            .fill(.blue)
+                            .opacity(animatingButton ? 0.2 : 0)
+                            .scaleEffect(animatingButton ? 1 : 0)
+                            .frame(width: 68, height: 68, alignment: .center)
+                        Circle()
+                            .fill(.blue)
+                            .opacity(animatingButton ? 0.15 : 0)
+                            .scaleEffect(animatingButton ? 1 : 0)
+                            .frame(width: 88, height: 88, alignment: .center)
+                    }
+                    
+                    
+                    Button {
+                        showingAddTodoView.toggle()
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .background(Circle().fill(.colorBase))
+                            .frame(width: 48, height: 48, alignment: .center)
+                    }
+                    .onAppear(perform: {
+                        DispatchQueue.main.async {
+                            withAnimation(Animation.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                                self.animatingButton.toggle()
+                            }
+                        }
+                    })
+                    
+                }
+                .padding(.bottom, 15)
+                .padding(.trailing, 15)
             }
         }
     }
