@@ -12,6 +12,7 @@ struct ContentView: View {
     // MARK: - PROPERTIES
     @State private var showingAddTodoView: Bool = false
     @State private var animatingButton: Bool = false
+    @State private var showingSettingsView: Bool = false
     
     @Environment(\.managedObjectContext) private var viewContext
 
@@ -43,11 +44,14 @@ struct ContentView: View {
                 .toolbar(content: {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(action: {
-                            showingAddTodoView.toggle()
+                            showingSettingsView.toggle()
                         }, label: {
-                            Image(systemName: "plus")
+                            Image(systemName: "paintbrush")
+                                .imageScale(.large)
                         })
-                        
+                        .sheet(isPresented: $showingSettingsView, content: {
+                           SettingsView()
+                        })
                     }
                     
                     ToolbarItem(placement: .topBarLeading) {
@@ -57,7 +61,7 @@ struct ContentView: View {
                 
                 // MARK: - NO TODO ITEMS
                 if todos.isEmpty {
-                    EmptyListView()
+                        EmptyListView()
                 }
             }
             .sheet(isPresented: $showingAddTodoView, content: {
@@ -69,14 +73,14 @@ struct ContentView: View {
                         Circle()
                             .fill(.blue)
                             .opacity(animatingButton ? 0.2 : 0)
-                            .scaleEffect(animatingButton ? 1 : 0)
                             .frame(width: 68, height: 68, alignment: .center)
                         Circle()
                             .fill(.blue)
                             .opacity(animatingButton ? 0.15 : 0)
-                            .scaleEffect(animatingButton ? 1 : 0)
                             .frame(width: 88, height: 88, alignment: .center)
                     }
+                    .animation(Animation.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: animatingButton)
+                    .scaleEffect(animatingButton ? 1 : 0)
                     
                     
                     Button {
@@ -89,11 +93,7 @@ struct ContentView: View {
                             .frame(width: 48, height: 48, alignment: .center)
                     }
                     .onAppear(perform: {
-                        DispatchQueue.main.async {
-                            withAnimation(Animation.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                                self.animatingButton.toggle()
-                            }
-                        }
+                        self.animatingButton.toggle()
                     })
                     
                 }
@@ -115,14 +115,6 @@ struct ContentView: View {
         }
     }
 }
-
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
 
 // MARK: - PROPERTIES
 #Preview {
