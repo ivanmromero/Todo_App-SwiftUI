@@ -10,6 +10,7 @@ import SwiftUI
 struct SettingsView: View {
     // MARK: - PROPERTIES
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var iconSettings: IconNames
     
     // MARK: - FUNCTIONS
     
@@ -19,6 +20,61 @@ struct SettingsView: View {
             VStack(alignment: .center, spacing: 0) {
                 // MARK: - FORM
                 Form {
+                    // MARK: - SECTION 1
+                    Section {
+                        Picker(selection: $iconSettings.currentIndex) {
+                            ForEach(0..<iconSettings.iconNames.count, id: \.self) { index in
+                                HStack {
+                                    Image(uiImage: UIImage(named: iconSettings.iconNames[index] ?? "Blue") ?? UIImage())
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 44, height: 44)
+                                        .clipShape(.rect(cornerRadius: 8))
+                                    
+                                    Spacer().frame(width: 8)
+                                    
+                                    Text(iconSettings.iconNames[index] ?? "Blue")
+                                        .frame(alignment: .leading)
+                                }
+                                .padding(3)
+                            }
+                        } label: {
+                            HStack {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                        .strokeBorder(.primary, lineWidth: 2)
+                                    
+                                    Image(systemName: "paintbrush")
+                                        .font(.system(size: 28, weight: .regular, design: .default))
+                                    .foregroundStyle(.primary)
+                                }
+                                .frame(width: 44, height: 44)
+                                
+                                Text("App Icons".uppercased())
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.primary)
+                            }
+                        }
+                        .onReceive([iconSettings.currentIndex].publisher.first()) { (value) in
+                            let index = iconSettings.iconNames.firstIndex(of: UIApplication.shared.alternateIconName) ?? 0
+                            
+                            if index != value {
+                                UIApplication.shared.setAlternateIconName(iconSettings.iconNames[value]) { error in
+                                    if let error = error {
+                                        print(error.localizedDescription)
+                                    } else {
+                                        print("Succes, change de icon")
+                                    }
+                                }
+                            }
+                        }
+                        .pickerStyle(.navigationLink)
+
+                    } header: {
+                        Text("Choose the app icon")
+                    }
+                    .padding(.vertical, 3)
+
                     // MARK: - SECTION 3
                     Section {
                         FormRowLinkView(icon: "globe", color: .pink, text: "LinkedIn", link: "https://linkedin.com/in/ivan-manuel-romero-sampayo/")
@@ -77,5 +133,5 @@ struct SettingsView: View {
 
 // MARK: - PREVIEW
 #Preview {
-    SettingsView()
+    SettingsView().environmentObject(IconNames())
 }

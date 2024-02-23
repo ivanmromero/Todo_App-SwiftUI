@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var showingSettingsView: Bool = false
     
     @Environment(\.managedObjectContext) private var viewContext
+    @EnvironmentObject var iconSettings: IconNames
 
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Todo.name, ascending: true)],
@@ -50,7 +51,7 @@ struct ContentView: View {
                                 .imageScale(.large)
                         })
                         .sheet(isPresented: $showingSettingsView, content: {
-                           SettingsView()
+                            SettingsView().environmentObject(iconSettings)
                         })
                     }
                     
