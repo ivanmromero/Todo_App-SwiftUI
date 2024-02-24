@@ -22,6 +22,8 @@ struct EmptyListView: View {
         "Each night schelude for tomorrow."
     ]
     
+    @ObservedObject var theme = ThemeSettings.shared
+    
     // MARK: - FUNCTIONS
     
     // MARK: - BODY
@@ -29,14 +31,17 @@ struct EmptyListView: View {
         ZStack {
             VStack(alignment: .center, spacing: 20) {
                 Image(images.randomElement() ?? images[0])
+                    .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
                     .frame(minWidth: 256, idealWidth: 280, maxWidth: 360, minHeight: 256, idealHeight: 280, maxHeight: 360, alignment: .center)
                     .layoutPriority(1)
+                    .foregroundStyle(themeData[theme.themeSettings].themeColor)
                 
                 Text(tips.randomElement() ?? tips[0])
                     .layoutPriority(0.5)
                     .font(.system(.headline, design: .rounded))
+                    .foregroundStyle(themeData[theme.themeSettings].themeColor)
             }
             .padding(.horizontal)
             .opacity(isAnimating ? 1 : 0)

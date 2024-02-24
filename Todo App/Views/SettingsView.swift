@@ -12,6 +12,9 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var iconSettings: IconNames
     
+    @ObservedObject var theme = ThemeSettings.shared
+    
+    @State private var isThemeChanged: Bool = false
     // MARK: - FUNCTIONS
     
     // MARK: - BODY
@@ -75,6 +78,40 @@ struct SettingsView: View {
                     }
                     .padding(.vertical, 3)
 
+                    // MARK: - SECTION 2
+                    Section {
+                        List(themeData, id: \.id) { item in
+                            Button {
+                                theme.themeSettings = item.id
+                                UserDefaults.standard.set(theme.themeSettings, forKey: "Theme")
+                                isThemeChanged.toggle()
+                            } label: {
+                                HStack {
+                                    Image(systemName: "circle.fill")
+                                        .foregroundStyle(item.themeColor)
+                                    
+                                    Text(item.themeName)
+                                }
+                            }
+                            .tint(.primary)
+                        }
+                        
+                    } header: {
+                        HStack {
+                            Text("Choose the app theme")
+                            Image(systemName: "circle.fill")
+                                .resizable()
+                                .frame(width: 10, height: 10)
+                                .foregroundStyle(themeData[theme.themeSettings].themeColor)
+                        }
+                    }
+                    .padding(.vertical, 3)
+                    .alert("SUCCESS!", isPresented: $isThemeChanged) {
+                        Button("OK", action: {})
+                    } message: {
+                        Text("App has been change to the \(themeData[theme.themeSettings].themeName).".capitalized)
+                    }
+                    
                     // MARK: - SECTION 3
                     Section {
                         FormRowLinkView(icon: "globe", color: .pink, text: "LinkedIn", link: "https://linkedin.com/in/ivan-manuel-romero-sampayo/")
@@ -128,6 +165,7 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .background(.colorBackground)
         }
+        .tint(themeData[theme.themeSettings].themeColor)
     }
 }
 

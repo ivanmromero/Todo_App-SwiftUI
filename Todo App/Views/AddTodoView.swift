@@ -21,6 +21,8 @@ struct AddTodoView: View {
     @State private var errorTitle: String = ""
     @State private var errorMessage: String = ""
     
+    @ObservedObject var theme = ThemeSettings.shared
+    
     // MARK: - FUNCTIONS
     private func save() {
         if !name.isEmpty {
@@ -70,7 +72,7 @@ struct AddTodoView: View {
                             .font(.system(size: 24, weight: .bold, design: .default))
                             .padding()
                             .frame(minWidth: 0, maxWidth: .infinity)
-                            .background(.blue)
+                            .background(themeData[theme.themeSettings].themeColor)
                             .clipShape(.rect(cornerRadius: 9))
                             .foregroundStyle(.white)
                     })
@@ -98,6 +100,7 @@ struct AddTodoView: View {
             }
 
         }
+        .tint(themeData[theme.themeSettings].themeColor)
     }
 }
 
